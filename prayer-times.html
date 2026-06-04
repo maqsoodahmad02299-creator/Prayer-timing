@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prayer Times – مواقیت الصلاة</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --deep: #0b1220;
+    --mid: #111d33;
+    --card: #16243d;
+    --card2: #1a2a44;
+    --text: #e8dfc8;
+    --muted: #8fa0bc;
+    --green: #2ecc71;
+    --active-glow: 0 0 18px #c9a84c55;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'Raleway', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Star field background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, #fff8 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, #fff6 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 55% 25%, #fff7 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 80%, #fff5 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, #fff6 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, #fff4 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 70%, #fff5 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 50%, #fff6 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 10%, #fff7 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 40px;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(180deg, #0d1929 0%, var(--deep) 100%);
+    padding: 28px 24px 20px;
+    text-align: center;
+    border-bottom: 1px solid #c9a84c33;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .mosque-icon {
+    font-size: 2.4rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 12px #c9a84c88);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px #c9a84c66); }
+    50% { filter: drop-shadow(0 0 20px #c9a84caa); }
+  }
+
+  .header h1 {
+    font-family: 'Amiri', serif;
+    font-size: 1.7rem;
+    color: var(--gold-light);
+    margin: 8px 0 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .header .arabic {
+    font-family: 'Amiri', serif;
+    font-size: 1.1rem;
+    color: var(--muted);
+    direction: rtl;
+  }
+
+  /* Live clock */
+  .live-clock {
+    background: var(--card);
+    margin: 18px 16px 0;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #c9a84c22;
+  }
+
+  .clock-label {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .clock-time {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .clock-date {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .hijri-date {
+    font-family: 'Amiri', serif;
+    font-size: 0.85rem;
+    color: var(--gold);
+    text-align: right;
+  }
+
+  /* City tabs */
+  .city-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 16px 16px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .city-tabs::-webkit-scrollbar { display: none; }
+
+  .city-tab {
+    flex: 0 0 auto;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #c9a84c33;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+  }
+
+  .city-tab:hover { border-color: var(--gold); color: var(--gold); }
+
+  .city-tab.active {
+    background: linear-gradient(135deg, #c9a84c22, #c9a84c11);
+    border-color: var(--gold);
+    color: var(--gold-light);
+    box-shadow: var(--active-glow);
+  }
+
+  /* City panel */
+  .city-panel {
+    display: none;
+    padding: 14px 16px 0;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .city-panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .city-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .city-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gold-light);
+  }
+
+  .city-time-live {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .city-subinfo {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 1px;
+    text-align: right;
+  }
+
+  /* Prayer cards */
+  .prayers-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .prayer-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #ffffff0a;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .prayer-card.current {
+    background: linear-gradient(135deg, #1e2e4a, #1a2840);
+    border-color: var(--gold);
+    box-shadow: var(--active-glow);
+  }
+
+  .prayer-card.current::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gold);
+    border-radius: 3px 0 0 3px;
+  }
+
+  .prayer-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .prayer-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    background: #ffffff08;
+  }
+
+  .prayer-card.current .prayer-icon {
+    background: #c9a84c18;
+  }
+
+  .prayer-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .prayer-arabic {
+    font-family: 'Amiri', serif;
+    font-size: 0.8rem;
+    color: var(--muted);
+    direction: rtl;
+  }
+
+  .prayer-card.current .prayer-name { color: var(--gold-light); }
+
+  .prayer-time-display {
+    text-align: right;
+  }
+
+  .prayer-time {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .prayer-card.current .prayer-time { color: var(--gold-light); }
+
+  .prayer-countdown {
+    font-size: 0.68rem;
+    color: var(--green);
+    margin-top: 2px;
+  }
+
+  /* Next prayer banner */
+  .next-prayer-banner {
+    background: linear-gradient(135deg, #1e3a2a, #152a1e);
+    border: 1px solid #2ecc7144;
+    border-radius: 14px;
+    padding: 12px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .next-label {
+    font-size: 0.7rem;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .next-name { font-weight: 700; color: var(--text); margin-top: 2px; }
+
+  .next-countdown {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--green);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px 16px 0;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.6;
+  }
+
+  .footer .bismillah {
+    font-family: 'Amiri', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+    direction: rtl;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="mosque-icon">🕌</div>
+    <h1>Prayer Times</h1>
+    <div class="arabic">مواقيت الصلاة</div>
+  </div>
+
+  <!-- Live UTC clock -->
+  <div class="live-clock">
+    <div>
+      <div class="clock-label">Local Device Time</div>
+      <div class="clock-time" id="master-clock">--:--:--</div>
+      <div class="clock-date" id="master-date">--</div>
+    </div>
+    <div>
+      <div class="hijri-date" id="hijri-display">--</div>
+      <div class="clock-label" style="text-align:right;margin-top:4px;">Hijri</div>
+    </div>
+  </div>
+
+  <!-- City Tabs -->
+  <div class="city-tabs">
+    <button class="city-tab active" onclick="switchCity('pakistan')">🇵🇰 Pakistan</button>
+    <button class="city-tab" onclick="switchCity('makkah')">🕋 Makkah</button>
+    <button class="city-tab" onclick="switchCity('london')">🇬🇧 London</button>
+    <button class="city-tab" onclick="switchCity('newyork')">🇺🇸 New York</button>
+  </div>
+
+  <!-- PAKISTAN -->
+  <div class="city-panel active" id="panel-pakistan">
+    <div class="city-header">
+      <div>
+        <div class="city-name">🇵🇰 Lahore / Karachi</div>
+        <div style="font-size:0.72rem;color:var(--muted)">Pakistan Standard Time (UTC+5)</div>
+      </div>
+      <div>
+        <div class="city-time-live" id="time-pakistan">--:--</div>
+        <div class="city-subinfo" id="date-pakistan">--</div>
+      </div>
+    </div>
+    <div class="next-prayer-banner" id="next-pakistan">
+      <div><div class="next-label">Next Prayer</div><div class="next-name" id="next-name-pakistan">—</div></div>
+      <div class="next-countdown" id="next-cd-pakistan">--:--:--</div>
+    </div>
+    <div class="prayers-grid" id="grid-pakistan"></div>
+  </div>
+
+  <!-- MAKKAH -->
+  <div class="city-panel" id="panel-makkah">
+    <div class="city-header">
+      <div>
+        <div class="city-name">🕋 Makkah Al-Mukarramah</div>
+        <div style="font-size:0.72rem;color:var(--muted)">Arabia Standard Time (UTC+3)</div>
+      </div>
+      <div>
+        <div class="city-time-live" id="time-makkah">--:--</div>
+        <div class="city-subinfo" id="date-makkah">--</div>
+      </div>
+    </div>
+    <div class="next-prayer-banner" id="next-makkah">
+      <div><div class="next-label">Next Prayer</div><div class="next-name" id="next-name-makkah">—</div></div>
+      <div class="next-countdown" id="next-cd-makkah">--:--:--</div>
+    </div>
+    <div class="prayers-grid" id="grid-makkah"></div>
+  </div>
+
+  <!-- LONDON -->
+  <div class="city-panel" id="panel-london">
+    <div class="city-header">
+      <div>
+        <div class="city-name">🇬🇧 London</div>
+        <div style="font-size:0.72rem;color:var(--muted)">British Summer Time (UTC+1)</div>
+      </div>
+      <div>
+        <div class="city-time-live" id="time-london">--:--</div>
+        <div class="city-subinfo" id="date-london">--</div>
+      </div>
+    </div>
+    <div class="next-prayer-banner" id="next-london">
+      <div><div class="next-label">Next Prayer</div><div class="next-name" id="next-name-london">—</div></div>
+      <div class="next-countdown" id="next-cd-london">--:--:--</div>
+    </div>
+    <div class="prayers-grid" id="grid-london"></div>
+  </div>
+
+  <!-- NEW YORK -->
+  <div class="city-panel" id="panel-newyork">
+    <div class="city-header">
+      <div>
+        <div class="city-name">🇺🇸 New York</div>
+        <div style="font-size:0.72rem;color:var(--muted)">Eastern Time (UTC−4 EDT)</div>
+      </div>
+      <div>
+        <div class="city-time-live" id="time-newyork">--:--</div>
+        <div class="city-subinfo" id="date-newyork">--</div>
+      </div>
+    </div>
+    <div class="next-prayer-banner" id="next-newyork">
+      <div><div class="next-label">Next Prayer</div><div class="next-name" id="next-name-newyork">—</div></div>
+      <div class="next-countdown" id="next-cd-newyork">--:--:--</div>
+    </div>
+    <div class="prayers-grid" id="grid-newyork"></div>
+  </div>
+
+  <div class="footer">
+    <span class="bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</span>
+    Prayer times are calculated using the Muslim World League method.<br>
+    Times are approximate — verify locally for fasting & Eid.
+  </div>
+
+</div>
+
+<script>
+// ─── City Config ──────────────────────────────────────────────────
+const CITIES = {
+  pakistan: { tz: 'Asia/Karachi',        offset: 5,   lat: 31.5204, lon: 74.3587 },
+  makkah:   { tz: 'Asia/Riyadh',         offset: 3,   lat: 21.3891, lon: 39.8579 },
+  london:   { tz: 'Europe/London',        offset: 1,   lat: 51.5072, lon: -0.1276 },
+  newyork:  { tz: 'America/New_York',     offset: -4,  lat: 40.7128, lon: -74.0060 },
+};
+
+const PRAYERS = [
+  { key: 'fajr',    name: 'Fajr',    arabic: 'الفجر',   icon: '🌙' },
+  { key: 'sunrise', name: 'Sunrise', arabic: 'الشروق',  icon: '🌅', noCountdown: true },
+  { key: 'dhuhr',   name: 'Dhuhr',   arabic: 'الظهر',   icon: '☀️' },
+  { key: 'asr',     name: 'Asr',     arabic: 'العصر',   icon: '🌤️' },
+  { key: 'maghrib', name: 'Maghrib', arabic: 'المغرب',  icon: '🌆' },
+  { key: 'isha',    name: 'Isha',    arabic: 'العشاء',   icon: '🌃' },
+];
+
+// ─── Sun Calculations (MWL method) ────────────────────────────────
+function toRad(d) { return d * Math.PI / 180; }
+function toDeg(r) { return r * 180 / Math.PI; }
+
+function calcPrayerTimes(date, lat, lon, tzOffset) {
+  const JD = julianDate(date.getUTCFullYear(), date.getUTCMonth()+1, date.getUTCDate());
+  const D = JD - 2451545.0;
+  const g = toRad((357.529 + 0.98560028 * D) % 360);
+  const q = (280.459 + 0.98564736 * D) % 360;
+  const L = toRad((q + 1.915 * Math.sin(g) + 0.020 * Math.sin(2*g)) % 360);
+  const e = toRad(23.439 - 0.00000036 * D);
+  const RA = toDeg(Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L))) / 15;
+  const sinDec = Math.sin(e) * Math.sin(L);
+  const dec = Math.asin(sinDec);
+  const EqT = q/15 - ((RA + 24) % 24);
+  const noon = 12 - EqT - (lon/15 - tzOffset);
+
+  function sunAngleT(angle, above) {
+    const cosH = (Math.sin(toRad(angle)) - Math.sin(toRad(lat))*sinDec) /
+                 (Math.cos(toRad(lat))*Math.cos(dec));
+    if (Math.abs(cosH) > 1) return null;
+    const H = toDeg(Math.acos(cosH)) / 15;
+    return above ? noon - H : noon + H;
+  }
+
+  function asrT(shadow) {
+    const A = Math.atan(1/(shadow + Math.tan(Math.abs(toRad(lat) - dec))));
+    const cosH = (Math.sin(A) - Math.sin(toRad(lat))*sinDec) /
+                 (Math.cos(toRad(lat))*Math.cos(dec));
+    if (Math.abs(cosH) > 1) return null;
+    return noon + toDeg(Math.acos(cosH)) / 15;
+  }
+
+  return {
+    fajr:    sunAngleT(-18, true),  // MWL: 18°
+    sunrise: sunAngleT(-0.833, true),
+    dhuhr:   noon + 0.017,
+    asr:     asrT(1),               // Shafi: shadow = 1
+    maghrib: sunAngleT(-0.833, false),
+    isha:    sunAngleT(-17, false),  // MWL: 17°
+  };
+}
+
+function julianDate(y, m, d) {
+  if (m <= 2) { y--; m += 12; }
+  const A = Math.floor(y/100);
+  const B = 2 - A + Math.floor(A/4);
+  return Math.floor(365.25*(y+4716)) + Math.floor(30.6001*(m+1)) + d + B - 1524.5;
+}
+
+function hrsToHHMM(h) {
+  if (h === null) return '--:--';
+  let hh = Math.floor(h) % 24;
+  let mm = Math.round((h % 1) * 60);
+  if (mm === 60) { hh++; mm = 0; }
+  hh = ((hh % 24) + 24) % 24;
+  const period = hh >= 12 ? 'PM' : 'AM';
+  const hh12 = hh % 12 || 12;
+  return `${String(hh12).padStart(2,'0')}:${String(mm).padStart(2,'0')} ${period}`;
+}
+
+function hrsToMinutes(h) {
+  if (h === null) return null;
+  let total = Math.round(h * 60);
+  return ((total % 1440) + 1440) % 1440;
+}
+
+// ─── Hijri date (approximate) ────────────────────────────────────
+function toHijri(date) {
+  const JD = Math.floor(julianDate(date.getFullYear(), date.getMonth()+1, date.getDate())) + 0.5;
+  const z = Math.floor(JD - 1948439.5 + 0.5) + 1;
+  const a = Math.floor((z - 1) / 10631);
+  const b = z - 1 - 10631 * a;
+  const c = Math.floor((b - 1) / 354.3666);
+  const d = b - Math.floor(354.3666 * c) - 1;
+  const month = Math.min(Math.ceil((d - 1) / 29.5) + 1, 12);
+  const year = 30 * a + c + 1;
+  const day = d - Math.floor(29.5 * (month - 1));
+  const months = ['Muharram','Safar','Rabi I','Rabi II','Jumada I','Jumada II','Rajab','Sha\'ban','Ramadan','Shawwal','Dhu\'l-Qa\'dah','Dhu\'l-Hijjah'];
+  return `${day} ${months[month-1]} ${year} AH`;
+}
+
+// ─── Build grid ───────────────────────────────────────────────────
+function buildGrid(cityKey) {
+  const cfg = CITIES[cityKey];
+  const now = new Date();
+  const cityDate = new Date(now.toLocaleString('en-US', { timeZone: cfg.tz }));
+  const times = calcPrayerTimes(cityDate, cfg.lat, cfg.lon, cfg.offset);
+
+  const nowMin = cityDate.getHours() * 60 + cityDate.getMinutes();
+  const timeMins = {};
+  PRAYERS.forEach(p => { timeMins[p.key] = hrsToMinutes(times[p.key]); });
+
+  // current prayer
+  const prayerKeys = ['fajr','sunrise','dhuhr','asr','maghrib','isha'];
+  let currentIdx = -1;
+  for (let i = prayerKeys.length - 1; i >= 0; i--) {
+    const m = timeMins[prayerKeys[i]];
+    if (m !== null && nowMin >= m) { currentIdx = i; break; }
+  }
+
+  // next prayer (skip sunrise)
+  let nextIdx = -1;
+  const prayerableKeys = ['fajr','dhuhr','asr','maghrib','isha'];
+  for (let i = 0; i < prayerableKeys.length; i++) {
+    const m = timeMins[prayerableKeys[i]];
+    if (m !== null && m > nowMin) { nextIdx = i; break; }
+  }
+
+  // countdown to next
+  let nextName = '—', cdStr = '--:--:--';
+  if (nextIdx >= 0) {
+    nextName = PRAYERS.find(p=>p.key===prayerableKeys[nextIdx]).name;
+    const diff = (timeMins[prayerableKeys[nextIdx]] - nowMin) * 60 - cityDate.getSeconds();
+    const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+    cdStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  } else if (timeMins['fajr'] !== null) {
+    // after Isha, next is Fajr tomorrow
+    nextName = 'Fajr (tomorrow)';
+    const diff = (1440 - nowMin + timeMins['fajr']) * 60 - cityDate.getSeconds();
+    const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+    cdStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  document.getElementById(`next-name-${cityKey}`).textContent = nextName;
+  document.getElementById(`next-cd-${cityKey}`).textContent = cdStr;
+
+  const grid = document.getElementById(`grid-${cityKey}`);
+  grid.innerHTML = '';
+  PRAYERS.forEach((p, idx) => {
+    const isCurrent = (p.key === prayerKeys[currentIdx]);
+    const card = document.createElement('div');
+    card.className = 'prayer-card' + (isCurrent ? ' current' : '');
+    card.innerHTML = `
+      <div class="prayer-left">
+        <div class="prayer-icon">${p.icon}</div>
+        <div>
+          <div class="prayer-name">${p.name}</div>
+          <div class="prayer-arabic">${p.arabic}</div>
+        </div>
+      </div>
+      <div class="prayer-time-display">
+        <div class="prayer-time">${hrsToHHMM(times[p.key])}</div>
+        ${isCurrent ? '<div class="prayer-countdown">● Current</div>' : ''}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ─── Clock updates ────────────────────────────────────────────────
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function formatCityTime(cityKey) {
+  const cfg = CITIES[cityKey];
+  const now = new Date();
+  const opts = { timeZone: cfg.tz, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+  const dOpts = { timeZone: cfg.tz, weekday: 'short', month: 'short', day: 'numeric' };
+  return {
+    time: now.toLocaleTimeString('en-US', opts),
+    date: now.toLocaleDateString('en-US', dOpts),
+  };
+}
+
+let tick = 0;
+function tick_update() {
+  const now = new Date();
+
+  // master clock
+  document.getElementById('master-clock').textContent =
+    now.toLocaleTimeString('en-US', { hour12: false });
+  document.getElementById('master-date').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('hijri-display').textContent = toHijri(now);
+
+  // city clocks
+  ['pakistan','makkah','london','newyork'].forEach(k => {
+    const { time, date } = formatCityTime(k);
+    document.getElementById(`time-${k}`).textContent = time;
+    document.getElementById(`date-${k}`).textContent = date;
+  });
+
+  // rebuild grids every 30s or on first load
+  if (tick % 30 === 0) {
+    ['pakistan','makkah','london','newyork'].forEach(k => buildGrid(k));
+  } else {
+    // just update countdowns
+    ['pakistan','makkah','london','newyork'].forEach(k => buildGrid(k));
+  }
+  tick++;
+}
+
+// ─── City switching ───────────────────────────────────────────────
+function switchCity(key) {
+  document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.city-panel').forEach(p => p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById(`panel-${key}`).classList.add('active');
+}
+
+// ─── Init ────────────────────────────────────────────────────────
+tick_update();
+setInterval(tick_update, 1000);
+</script>
+</body>
+</html>
